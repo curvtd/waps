@@ -2,6 +2,7 @@ import os
 import re
 
 def get_access_points():
+    '''Discover access points and collect information in dictionaries'''
     raw_scan = os.popen('iw dev wlan0 scan').read()
 
     mac = re.findall(r' (..:..:..:..:..:..)', raw_scan)     # Extracts 
@@ -20,4 +21,33 @@ def get_access_points():
 
         count += 1
 
-get_access_points()
+    print('\nDiscovered some acess points')
+    return access_points
+
+
+def get_allowed_mac():
+    '''Getting the allowed MAC addresses'''
+    try:
+        with open('./whitelist.txt') as file:
+            whitelist = file.read().splitlines()
+        if whitelist == '':
+            raise NoAllowedAP
+    except:
+        print('Please, write the allowed MAC address of access points '+\
+              'in whitelist.txt \nOne MAC address per line')
+    else:
+        return whitelist
+
+
+def delete_allowed():
+    '''Deleting allowed MAC addresses from discovered APs'''
+    access_points = get_access_points()
+    whitelist = get_allowed_mac()
+
+    for address in whitelist:
+        if address in access_points:
+            del access_points[address]
+
+    print('Allowed MAC addresses deleted from discovered APs')
+    return access_points
+
