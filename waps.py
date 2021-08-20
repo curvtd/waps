@@ -35,7 +35,8 @@ def get_information():
 
 def get_access_points():
     '''Detecting and storing access points'''
-    raw_scan = os.popen("iw dev wlan0 scan").read()
+    interface = input("Enter the interface for scanning: ")
+    raw_scan = os.popen(f"iw dev {interface} scan").read()
     mac = re.findall(r' (..:..:..:..:..:..)', raw_scan)     # Extracts 
     ssid = re.findall(r'SSID: (.*)', raw_scan)              # MAC,SSID,Signal
     signal = re.findall(r'signal: (-.+).00 dBm', raw_scan)  # from the command output
