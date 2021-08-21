@@ -1,41 +1,64 @@
 #!/usr/bin/env python3
 from time import sleep
+import argparse
 import os
 import re
 
-def get_information():
-    '''Receiving and verifying information'''
-    name = input("Enter a name for the device: ")
+def information_parser():
+    global interface
+    parser = argparse.ArgumentParser(description='Gathers necessary information')
+    parser.add_argument('-n', '--name',
+                        metavar='NAME', required=True,
+                        help='enter a name for the device')
+    parser.add_argument('-i', '--interface',
+                        metavar='INT', type=str, required=True,
+                        help='enter network interface for scan')
+    parser.add_argument('-s', '--seconds',
+                        metavar='SEC', type=int, required=True,
+                        help='enter user ID')
+    parser.add_argument('-t', '--token',
+                        metavar='API', type=str, required=True,
+                        help='enter api token (bot)')
+    parser.add_argument('-u', '--user',
+                        metavar='ID', type=int, required=True,
+                        help='enter user ID')
+    args = parser.parse_args()
 
-    while True:
-        token = input("Enter API token: ")
-        command = f"curl -s https://api.telegram.org/bot{token}/getUpdates"
-        verify_token = os.popen(command).read()
+    name = args.name
+    seconds = args.seconds
+    interface = args.interface
+    interface_state = os.popen(
+        f'ifconfig').read()
+    token = args.token
+    token_state = os.popen(
+        f"curl -s https://api.telegram.org/bot{token}/getUpdates").read()
+    user = args.user
+    user_state = os.popen(
+        f"curl -s https://api.telegram.org/bot{token}/getChat -d chat_id={user}").read()
 
-        if "true" in verify_token:
-            print("Token is valid")
-            break
-        else:
-            print("API token is invalid, try again\n")
+    if interface in interface_state:
+        print(f'Interface {interface} is up')
+    else:
+        print(f'Interface {interface} is down. Exiting...')
+        exit()
 
+    if "true" in token_state:
+        print('API token is valid')
+    else:
+        print('API token is invalid. Exiting...')
+        exit()
 
-    while True:
-        user = input("Enter your UserID: ")
-        command = f"curl -s https://api.telegram.org/bot{token}/getChat -d chat_id={user}"
-        verify_user = os.popen(command).read()
+    if 'true' in user_state:
+        print('User ID is valid')
+    else:
+        print('User ID is invalid. Exiting...')
+        exit()
 
-        if "true" in verify_user:
-            print("UserID is valid")
-            break
-        else:
-            print("UserID is invalid, try again\n")
-
-    return name, token, user
+    return name, seconds, token, user
 
 
 def get_access_points():
     '''Detecting and storing access points'''
-    interface = input("Enter the interface for scanning: ")
     raw_scan = os.popen(f"iw dev {interface} scan").read()
     mac = re.findall(r' (..:..:..:..:..:..)', raw_scan)     # Extracts 
     ssid = re.findall(r'SSID: (.*)', raw_scan)              # MAC,SSID,Signal
@@ -59,11 +82,12 @@ def get_access_points():
         else:
             print('\nMultiple access points detected')
             break
+
     return access_points
 
 
 def get_allowed_mac():
-    '''Obtaining allowed MAC addresses'''
+    '''Pulls MACs from the whitelist.txt'''
     with open('./whitelist.txt') as file:
         whitelist = file.read().lower().splitlines()
 
@@ -85,8 +109,7 @@ def delete_allowed():
 
 def create_report():
     '''Creating a report and sending it to Telegram'''
-    name, token, user = get_information()
-    time_amount = int(input("Enter the number of seconds to sleep: "))
+    name, seconds, token, user = information_parser()
 
     while True:
         access_points = delete_allowed()
@@ -99,11 +122,11 @@ def create_report():
 
             print("Sending the report to Telegram")
             command = f"curl -s https://api.telegram.org/bot{token}/sendMessage -d chat_id={user} -d text='{message}'"
-            os.system(command)
+            os.system(f"{command} > /dev/null")
         else:
             print('No unknown access points detected')
 
-        sleep(time_amount)
+        sleep(seconds)
 
 
 create_report()
