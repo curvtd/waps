@@ -1,15 +1,8 @@
-[![banner_waps](images/banner_waps.png)]
-
-[![badge_python](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
-[![badge_works](images/badge_works.svg)](https://forthebadge.com)
-[![badge_no](images/badge_no.svg)](https://forthebadge.com)
+![banner_waps](images/banner_waps.png)
 
 ## :telescope: About
 `waps` scans and identifies unknown/unauthorized access points using a whitelist of authorized access points, then sends a report to Telegram (MAC, SIGNAL, SSID)
 
-![gif_waps](images/just_waps.gif)
-
-Using a whitelist
 ![gif_waps_whitelist](images/waps_whitelist.gif)
 
 The main limitation for the project is that the script must work on routers with OpenWRT without using external libraries. 
@@ -44,5 +37,6 @@ Example of whitelist.txt:
 AA:AA:AA:AA:AA:AA
 BB:BB:BB:BB:BB:BB
 ```
+
 
 
