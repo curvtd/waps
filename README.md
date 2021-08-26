@@ -1,7 +1,7 @@
 ![banner_waps](images/banner_waps.png)
 
 ## :telescope: About
-`waps` scans and identifies unknown/unauthorized access points using a whitelist of authorized access points, then sends a report to Telegram (MAC, SIGNAL, SSID)
+`Wireless Access Point Scanner` - scans and identifies unknown/unauthorized access points using a whitelist of authorized access points, then sends a report to Telegram (MAC, SIGNAL, SSID)
 
 ![gif_waps_whitelist](images/waps_whitelist.gif)
 
