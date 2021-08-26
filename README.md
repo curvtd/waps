@@ -12,7 +12,8 @@ The main limitation for the project is that the script must work on routers with
 
 ## :gear: Installation
 1. Install the tools
-    + Debian: `apt-get install iw curl`
+    + Debian: `apt-get install iw curl python3`
+    + OpenWRT: `opkg install iw curl python3-light`
 2. Clone the repository
     + `git clone https://github.com/curvtd/waps.git`
 
