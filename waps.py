@@ -6,27 +6,30 @@ import re
 
 def information_parser():
     global interface
-    parser = argparse.ArgumentParser(description='Gathers necessary information')
+    parser = argparse.ArgumentParser(
+            description='Keep an eye out for unauthorized access points',
+            usage='waps.py -n NAME -i INTERFACE -s SECONDS -t API -u ID')
+    parser._optionals.title = 'Required arguments (except "help")'
     parser.add_argument('-n', '--name',
                         metavar='NAME', required=True,
-                        help='enter a name for the device')
-    parser.add_argument('-i', '--interface',
+                        help='Name for the device')
+    parser.add_argument('-i', '--int',
                         metavar='INT', type=str, required=True,
-                        help='enter network interface for scan')
-    parser.add_argument('-s', '--seconds',
+                        help='Network interface for scan')
+    parser.add_argument('-s', '--sec',
                         metavar='SEC', type=int, required=True,
-                        help='enter user ID')
+                        help='Time period between report creation')
     parser.add_argument('-t', '--token',
                         metavar='API', type=str, required=True,
-                        help='enter api token (bot)')
+                        help='Telegram Bot API token')
     parser.add_argument('-u', '--user',
                         metavar='ID', type=int, required=True,
-                        help='enter user ID')
+                        help='User/Chat ID')
     args = parser.parse_args()
 
     name = args.name
-    seconds = args.seconds
-    interface = args.interface
+    seconds = args.sec
+    interface = args.int
     interface_state = os.popen(
         f'ifconfig').read()
     token = args.token
@@ -56,6 +59,11 @@ def information_parser():
 
     return name, seconds, token, user
 
+def root_check():
+    if not os.geteuid() == 0:
+        print('\nThis script must be run as root!')
+        exit()
+
 
 def get_access_points():
     '''Detecting and storing access points'''
@@ -78,6 +86,7 @@ def get_access_points():
                 count += 1
         except:
             print("Something went wrong, trying again")
+            raw_scan = os.popen(f"iw dev {interface} scan").read()
             continue
         else:
             print('\nMultiple access points detected')
@@ -88,8 +97,12 @@ def get_access_points():
 
 def get_allowed_mac():
     '''Pulls MACs from the whitelist.txt'''
-    with open('./whitelist.txt') as file:
-        whitelist = file.read().lower().splitlines()
+    try:
+        with open('./whitelist.txt') as file:
+            whitelist = file.read().lower().splitlines()
+    except:
+        print("\nEven if you don't have an authorized access points - create the 'whitelist.txt' and leave it empty")
+        exit()
 
     return whitelist
 
@@ -110,6 +123,7 @@ def delete_allowed():
 def create_report():
     '''Creating a report and sending it to Telegram'''
     name, seconds, token, user = information_parser()
+    root_check()
 
     while True:
         access_points = delete_allowed()
